@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -239,6 +239,17 @@ require('lazy').setup({
   --
   -- Use `opts = {}` to force a plugin to be loaded.
   --
+
+  -- Netrw icons
+  { 'prichrd/netrw.nvim', opts = {
+    use_devicons = true,
+  } },
+
+  -- Latex stuff
+  'lervag/vimtex',
+  'neovim/nvim-lspconfig',
+  'hrsh7th/cmp-nvim-lsp',
+  'hrsh7th/nvim-cmp',
 
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
@@ -609,7 +620,9 @@ require('lazy').setup({
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
-      capabilities.textDocument.completion = nil
+      --
+      -- Trying to disable the autocomplete stuff but I think this gets reset by nvim-cmp
+      -- capabilities.textDocument.completion = nil
       local servers = {
         clangd = {
           --cmd = { 'clangd', '--compile-commands-dir=cmake-build-debug' }, -- adjust path
@@ -624,8 +637,9 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
-        --
+        ts_ls = {},
+
+        texlab = {},
 
         lua_ls = {
           -- cmd = {...},
@@ -981,7 +995,7 @@ require('lazy').setup({
 vim.cmd 'set tabstop=4'
 vim.cmd 'set shiftwidth=4'
 vim.cmd 'set expandtab'
-vim.cmd 'retab'
+--vim.cmd 'retab'
 
 vim.filetype.add {
   extension = {
