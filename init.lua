@@ -190,6 +190,25 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+-- Java maven
+vim.keymap.set('n', '<leader>mr', function()
+  -- Open horizontal split
+  vim.cmd 'split'
+  -- Resize split (optional)
+  vim.cmd 'resize 15'
+  -- Start terminal with Maven command
+  vim.cmd 'term mvn clean install'
+  vim.cmd 'term mvn spring-boot:run'
+  -- Enter insert mode automatically
+  vim.cmd 'startinsert'
+end, { desc = 'maven: spring-boot:run' })
+
+vim.keymap.set('n', '<leader>mp', function()
+  vim.cmd 'split'
+  vim.cmd 'term mvn package'
+  vim.cmd 'startinsert'
+end, { desc = 'maven: create JAR package' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -231,7 +250,10 @@ require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
-  'mfussenegger/nvim-dap',
+  -- 'mfussenegger/nvim-dap',
+  'mfussenegger/nvim-jdtls',
+
+  'nvim-java/nvim-java',
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -241,15 +263,23 @@ require('lazy').setup({
   --
 
   -- Netrw icons
-  { 'prichrd/netrw.nvim', opts = {
-    use_devicons = true,
-  } },
+  {
+    'prichrd/netrw.nvim',
+    opts = {
+      use_devicons = true,
+    },
+  },
 
   -- Latex stuff
-  'lervag/vimtex',
-  'neovim/nvim-lspconfig',
-  'hrsh7th/cmp-nvim-lsp',
-  'hrsh7th/nvim-cmp',
+  {
+    'lervag/vimtex',
+    lazy = false, -- we don't want to lazy load VimTeX
+    -- tag = "v2.15", -- uncomment to pin to a specific release
+    init = function()
+      -- VimTeX configuration goes here, e.g.
+      -- vim.g.vimtex_view_method = 'zathura'
+    end,
+  },
 
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
@@ -330,6 +360,7 @@ require('lazy').setup({
         { '<leader>c', group = '[C]ode', mode = { 'n', 'x' } },
         { '<leader>d', group = '[D]ocument' },
         { '<leader>r', group = '[R]ename' },
+        { '<leader>m', group = '[M]aven' },
         { '<leader>s', group = '[S]earch' },
         { '<leader>w', group = '[W]orkspace' },
         { '<leader>t', group = '[T]oggle' },
@@ -348,7 +379,8 @@ require('lazy').setup({
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
     event = 'VimEnter',
-    branch = '0.1.x',
+    branch = 'master',
+    -- branch = '0.1.x', NOTE: Currently broken. See: https://github.com/nvim-telescope/telescope.nvim/issues/3469
     dependencies = {
       'nvim-lua/plenary.nvim',
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
@@ -641,6 +673,8 @@ require('lazy').setup({
 
         texlab = {},
 
+        pylsp = {},
+
         lua_ls = {
           -- cmd = {...},
           -- filetypes = { ...},
@@ -735,7 +769,7 @@ require('lazy').setup({
         c = { 'clang_format' },
         cpp = { 'clang_format' },
         -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
+        python = { 'isort', 'black' },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
@@ -750,6 +784,8 @@ require('lazy').setup({
       -- Snippet Engine & its associated nvim-cmp source
       {
         'L3MON4D3/LuaSnip',
+        -- follow latest release.
+        version = 'v2.*', -- Replace <CurrentMajor> by the latest released major (first number of latest release)
         build = (function()
           -- Build Step is needed for regex support in snippets.
           -- This step is not supported in many windows environments.
@@ -763,12 +799,12 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
       },
       'saadparwaiz1/cmp_luasnip',
@@ -879,8 +915,18 @@ require('lazy').setup({
     end,
   },
 
+  -- Todo lists
+  {
+    'atiladefreitas/dooing',
+    config = function()
+      require('dooing').setup {
+        -- your custom config here (optional)
+      }
+    end,
+  },
+
   -- Highlight todo, notes, etc in comments
-  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
+  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = true } },
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
@@ -930,6 +976,7 @@ require('lazy').setup({
       auto_install = true,
       highlight = {
         enable = true,
+        disable = { 'latex' },
         -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
         --  If you are experiencing weird indenting issues, add the language to
         --  the list of additional_vim_regex_highlighting and disabled languages for indent.
